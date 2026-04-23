@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@source "../widgets/**/*.{ts,tsx}";
+@source "../shared/**/*.{ts,tsx}";
+@source "../app/**/*.{ts,tsx}";
+
+aside {
+  border: none !important;
+}
