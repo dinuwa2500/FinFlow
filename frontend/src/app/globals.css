@@ -1,3 +1,4 @@
+@config "../tailwind.config.ts";
 @import "tailwindcss";
 
 @source "../widgets/**/*.{ts,tsx}";
@@ -6,4 +7,23 @@
 
 aside {
   border: none !important;
+}
+
+:root {
+  --background: #f8f9fa;
+  --foreground: #1c1c1e;
+  --border: #eef0f4;
+  --primary: #5c55ff;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f5f9;
+  --muted-foreground: #8e8e93;
+  --success: #34c759;
+  --danger: #ff3b30;
+  --warning: #ff9500;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
 }

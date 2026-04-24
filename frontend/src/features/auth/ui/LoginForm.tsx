@@ -30,15 +30,17 @@ export const LoginForm = () => {
       if (response.token) {
         localStorage.setItem("token", response.token);
         localStorage.setItem("user", JSON.stringify(response.user));
-        router.push("/overview");
+        router.push("/dashboard");
       }
     } catch (error: any) {
-      setApiError(error.response?.data?.error || "Login failed. Please check your credentials.");
+      setApiError(
+        error.response?.data?.error ||
+          "Login failed. Please check your credentials.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
-
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
@@ -90,7 +92,9 @@ export const LoginForm = () => {
         </Link>
       </div>
 
-      <Button type='submit' isLoading={isLoading}>Sign In</Button>
+      <Button type='submit' isLoading={isLoading}>
+        Sign In
+      </Button>
     </form>
   );
 };

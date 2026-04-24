@@ -2,10 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const authRoutes = require('./routes/auth');
-const categoryRoutes = require('./routes/category');
-const transactionRoutes = require('./routes/transaction');
-const budgetRoutes = require('./routes/budget');
+const authRoutes = require('./routes/auth_routes');
+const categoryRoutes = require('./routes/category_routes');
+const transactionRoutes = require('./routes/transaction_routes');
+const budgetRoutes = require('./routes/budget_routes');
 
 const rateLimit = require('express-rate-limit');
 const errorHandler = require('./middlewares/errorHandler');
@@ -31,6 +31,9 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/subscriptions', require('./routes/subscription_routes'));
+app.use('/api/goals', require('./routes/goal_routes'));
+app.use('/api/brands', require('./routes/brand_routes'));
 
 // Error Handler (Must be last)
 app.use(errorHandler);

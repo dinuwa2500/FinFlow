@@ -46,10 +46,30 @@ const summary = async (req, res) => {
   }
 };
 
+const history = async (req, res) => {
+  try {
+    const result = await transactionService.getHistory(req.user.id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const categoryStats = async (req, res) => {
+  try {
+    const result = await transactionService.getCategoryStats(req.user.id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   list,
   create,
   update,
   remove,
-  summary
+  summary,
+  history,
+  categoryStats
 };

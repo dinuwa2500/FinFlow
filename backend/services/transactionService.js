@@ -65,37 +65,141 @@ const deleteTransaction = async (userId, id) => {
 };
 
 const getSummary = async (userId, month, year) => {
-  const query = { userId };
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+  const query = { userId: userObjectId };
+  const prevQuery = { userId: userObjectId };
 
   if (month && year) {
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
     query.date = { $gte: start, $lte: end };
+
+    // Previous month
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    const prevStart = new Date(prevYear, prevMonth - 1, 1);
+    const prevEnd = new Date(prevYear, prevMonth, 0, 23, 59, 59);
+    prevQuery.date = { $gte: prevStart, $lte: prevEnd };
   }
 
-  const result = await Transaction.aggregate([
-    { $match: query },
+  const [currentResult, prevResult] = await Promise.all([
+    Transaction.aggregate([
+      { $match: query },
+      { $group: { _id: '$type', total: { $sum: '$amount' } } }
+    ]),
+    Transaction.aggregate([
+      { $match: prevQuery },
+      { $group: { _id: '$type', total: { $sum: '$amount' } } }
+    ])
+  ]);
+
+  const mapResult = (res) => {
+    let income = 0, expense = 0;
+    res.forEach(item => {
+      if (item._id === 'income') income = item.total;
+      if (item._id === 'expense') expense = item.total;
+    });
+    return { income, expense };
+  };
+
+  const current = mapResult(currentResult);
+  const prev = mapResult(prevResult);
+
+  const calculateGrowth = (curr, prevValue) => {
+    if (prevValue === 0) return curr > 0 ? 100 : 0;
+    return ((curr - prevValue) / prevValue) * 100;
+  };
+
+  return {
+    totalIncome: current.income,
+    totalExpenses: current.expense,
+    balance: current.income - current.expense,
+    incomeGrowth: calculateGrowth(current.income, prev.income),
+    expenseGrowth: calculateGrowth(current.expense, prev.expense)
+  };
+};
+
+const getHistory = async (userId) => {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+
+  const stats = await Transaction.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        date: { $gte: sixMonthsAgo }
+      }
+    },
     {
       $group: {
-        _id: '$type',
+        _id: {
+          month: { $month: '$date' },
+          year: { $year: '$date' },
+          type: '$type'
+        },
         total: { $sum: '$amount' }
       }
     }
   ]);
 
-  let totalIncome = 0;
-  let totalExpenses = 0;
+  // Format into a usable array for frontend (last 6 months)
+  const result = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear();
+    const monthName = d.toLocaleString('en-US', { month: 'short' });
 
-  result.forEach(item => {
-    if (item._id === 'income') totalIncome = item.total;
-    if (item._id === 'expense') totalExpenses = item.total;
-  });
+    const income = stats.find(s => s._id.month === month && s._id.year === year && s._id.type === 'income')?.total || 0;
+    const expense = stats.find(s => s._id.month === month && s._id.year === year && s._id.type === 'expense')?.total || 0;
 
-  return {
-    totalIncome,
-    totalExpenses,
-    balance: totalIncome - totalExpenses
-  };
+    result.push({
+      name: monthName,
+      income,
+      expense
+    });
+  }
+
+  return result;
+};
+
+const getCategoryStats = async (userId) => {
+  const result = await Transaction.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        type: 'expense'
+      }
+    },
+    {
+      $group: {
+        _id: '$category',
+        value: { $sum: '$amount' }
+      }
+    },
+    {
+      $lookup: {
+        from: 'categories',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'categoryInfo'
+      }
+    },
+    { $unwind: '$categoryInfo' },
+    {
+      $project: {
+        name: '$categoryInfo.name',
+        value: 1,
+        color: '$categoryInfo.color'
+      }
+    },
+    { $sort: { value: -1 } },
+    { $limit: 5 }
+  ]);
+
+  return result;
 };
 
 module.exports = {
@@ -103,5 +207,7 @@ module.exports = {
   getTransactions,
   updateTransaction,
   deleteTransaction,
-  getSummary
+  getSummary,
+  getHistory,
+  getCategoryStats
 };

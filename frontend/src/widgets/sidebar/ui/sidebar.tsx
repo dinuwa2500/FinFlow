@@ -7,6 +7,8 @@ import {
   Folder,
   LogOut,
   Wallet,
+  CalendarDays,
+  PlusCircle,
 } from "lucide-react";
 import { NavItem } from "@/shared/ui/nav-item"; // Import from Shared
 
@@ -16,7 +18,7 @@ export const Sidebar = () => {
   const menuItems = [
     {
       label: "Overview",
-      href: "/overview",
+      href: "/dashboard",
       icon: <LayoutDashboard size={18} />,
     },
     {
@@ -24,9 +26,21 @@ export const Sidebar = () => {
       href: "/transactions",
       icon: <ArrowLeftRight size={18} />,
     },
+  
+    {
+      label: "Subscriptions",
+      href: "/dashboard/subscriptions",
+      icon: <CalendarDays size={18} />,
+    },
     { label: "Budgets", href: "/budgets", icon: <PieChart size={18} /> },
     { label: "Categories", href: "/categories", icon: <Folder size={18} /> },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
   return (
     <div className='w-72 h-screen p-4 bg-gray-50 flex flex-col'>
@@ -53,7 +67,10 @@ export const Sidebar = () => {
         </nav>
 
         {/* Logout at bottom */}
-        <button className='mt-auto flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-red-500 transition-colors'>
+        <button 
+          onClick={handleLogout}
+          className='mt-auto flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-red-500 transition-colors'
+        >
           <LogOut size={18} />
           <span className='text-sm font-medium'>Log out</span>
         </button>

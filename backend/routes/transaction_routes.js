@@ -37,6 +37,8 @@ router.use(authenticate);
 router.get('/', validateQuery(transactionFiltersSchema), transactionController.list);
 router.post('/', validateBody(createTransactionSchema), transactionController.create);
 router.get('/summary', validateQuery(summarySchema), transactionController.summary);
+router.get('/history', transactionController.history);
+router.get('/category-stats', transactionController.categoryStats);
 router.patch('/:id', validateBody(updateTransactionSchema), transactionController.update);
 router.delete('/:id', transactionController.remove);
 
