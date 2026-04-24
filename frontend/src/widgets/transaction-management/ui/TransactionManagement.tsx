@@ -6,6 +6,7 @@ import { brandApi } from "@/entities/brand/api/brandApi";
 import { fetchRecentExpenses } from "@/entities/transaction/api/transactionApi";
 
 import { RecentSubscriptions } from "@/widgets/recent-subscriptions/ui/RecentSubscriptions";
+import { confirmDialog, successToast } from "@/shared/lib/swal";
 
 export const TransactionManagement = () => {
   const [brands, setBrands] = useState<any[]>([]);
@@ -123,9 +124,14 @@ export const TransactionManagement = () => {
                   </td>
                   <td className='py-4 text-right'>
                     <button 
-                      onClick={() => {
-                        if(confirm('Delete this transaction?')) {
+                      onClick={async () => {
+                        const result = await confirmDialog(
+                          "Delete Transaction?",
+                          "This action cannot be undone."
+                        );
+                        if (result.isConfirmed) {
                           setTransactions(prev => prev.filter(item => item._id !== t._id));
+                          successToast("Deleted!", "Transaction has been removed.");
                         }
                       }}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50"

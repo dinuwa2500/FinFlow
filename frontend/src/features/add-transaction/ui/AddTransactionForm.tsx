@@ -10,6 +10,7 @@ import { TransactionData } from "@/entities/transaction/model/types";
 import { categoryApi } from "@/entities/category/api/categoryApi";
 import { Category } from "@/entities/category/model/types";
 import { LayoutGrid } from "lucide-react";
+import { successToast, errorToast } from "@/shared/lib/swal";
 
 export const AddTransactionForm = ({ onCancel }: { onCancel: () => void }) => {
   const router = useRouter();
@@ -51,10 +52,10 @@ export const AddTransactionForm = ({ onCancel }: { onCancel: () => void }) => {
         amount: Number(data.amount), 
         date: new Date(data.date).toISOString(), 
       });
-      alert("Transaction saved successfully!");
+      await successToast("Transaction saved successfully!", "Your record has been added.");
       router.push("/dashboard");
     } catch (error) {
-      alert("Failed to save transaction. Please check your inputs.");
+      errorToast("Failed to save transaction", "Please check your inputs and try again.");
     } finally {
       setIsLoading(false);
     }

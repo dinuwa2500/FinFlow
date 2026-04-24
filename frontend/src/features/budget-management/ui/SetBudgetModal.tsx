@@ -4,6 +4,7 @@ import { X, PlusCircle, DollarSign, CalendarDays } from "lucide-react";
 import { categoryApi } from "@/entities/category/api/categoryApi";
 import { budgetApi } from "@/entities/budget/api/budgetApi";
 import { Category } from "@/entities/category/model/types";
+import { successToast, errorToast } from "@/shared/lib/swal";
 
 interface SetBudgetModalProps {
   onClose: () => void;
@@ -35,6 +36,7 @@ export const SetBudgetModal = ({ onClose, onCreated }: SetBudgetModalProps) => {
         amount: parseFloat(amount),
         period: { month, year },
       });
+      successToast("Budget Created!", `Monthly limit set for ${month}/${year}.`);
       onCreated();
       onClose();
     } catch (err: any) {

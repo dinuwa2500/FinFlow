@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { X, Edit3, DollarSign, Trash2 } from "lucide-react";
 import { budgetApi, BudgetProgress } from "@/entities/budget/api/budgetApi";
+import { successToast, errorToast } from "@/shared/lib/swal";
 
 interface EditBudgetModalProps {
   budget: BudgetProgress;
@@ -24,6 +25,7 @@ export const EditBudgetModal = ({ budget, onClose, onUpdated, onDeleted }: EditB
     setError("");
     try {
       await budgetApi.updateBudget(budget.id, parseFloat(amount));
+      successToast("Budget Updated!", `${budget.category} limit changed to $${parseFloat(amount).toLocaleString()}.`);
       onUpdated();
       onClose();
     } catch (err: any) {
@@ -37,6 +39,7 @@ export const EditBudgetModal = ({ budget, onClose, onUpdated, onDeleted }: EditB
     setIsDeleting(true);
     try {
       await budgetApi.deleteBudget(budget.id);
+      successToast("Budget Deleted", `${budget.category} budget has been removed.`);
       onDeleted();
       onClose();
     } catch (err: any) {

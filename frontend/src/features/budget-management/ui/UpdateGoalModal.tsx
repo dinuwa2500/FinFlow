@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { X, Target, TrendingUp } from "lucide-react";
 import { goalApi, Goal } from "@/entities/goal/api/goalApi";
+import { successToast, errorToast } from "@/shared/lib/swal";
 
 interface UpdateGoalModalProps {
   currentGoal: Goal;
@@ -25,6 +26,7 @@ export const UpdateGoalModal = ({ currentGoal, onClose, onUpdated }: UpdateGoalM
     setError("");
     try {
       const updated = await goalApi.update(form);
+      successToast("Goal Updated!", `"${form.name}" has been saved.`);
       onUpdated(updated);
       onClose();
     } catch (err: any) {
