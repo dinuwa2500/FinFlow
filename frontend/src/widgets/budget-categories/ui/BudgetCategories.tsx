@@ -1,71 +1,92 @@
 "use client";
-import { CategoryBudget } from "@/entities/budget/model/types";
+import { BudgetProgress } from "@/entities/budget/api/budgetApi";
 import { ProgressBar } from "@/shared/ui/ProgressBar";
-import { Home, ShoppingBasket, Film, Zap, AlertCircle, LayoutGrid } from "lucide-react";
+import { Home, ShoppingBasket, Film, Zap, AlertCircle, LayoutGrid, Coffee, Heart, Car, Pencil } from "lucide-react";
 
-const iconMap: any = {
+const iconMap: Record<string, any> = {
   Housing: Home,
   Groceries: ShoppingBasket,
   Entertainment: Film,
   Utilities: Zap,
+  Food: Coffee,
+  Health: Heart,
+  Transport: Car,
 };
 
-export const BudgetCategories = ({ data }: { data: CategoryBudget[] }) => {
+interface BudgetCategoriesProps {
+  data: BudgetProgress[];
+  onEdit?: (budget: BudgetProgress) => void;
+}
+
+export const BudgetCategories = ({ data, onEdit }: BudgetCategoriesProps) => {
+  if (data.length === 0) {
+    return (
+      <div className="mt-8 bg-white rounded-3xl border border-dashed border-gray-200 p-16 text-center">
+        <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <LayoutGrid size={24} className="text-indigo-400" />
+        </div>
+        <h3 className="font-bold text-gray-700 mb-1">No Budgets This Month</h3>
+        <p className="text-sm text-gray-400">Click "Set New Budget" to start tracking your spending limits.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className='space-y-4 mt-8'>
-      <div className='flex justify-between items-end mb-4'>
-        <h2 className='text-xl font-bold text-gray-800'>Expense Categories</h2>
-        <button className='text-sm text-indigo-600 font-medium hover:underline'>
-          View Detailed Insights →
-        </button>
+    <div className='space-y-3 mt-8'>
+      <div className='flex justify-between items-center mb-4 px-1'>
+        <h2 className='text-xl font-bold text-gray-800'>Spending by Category</h2>
+        <span className="text-xs text-gray-400 font-medium">{data.length} budget{data.length !== 1 ? 's' : ''} active</span>
       </div>
 
       {data.map((cat) => {
-        const percent = (cat.spent / cat.limit) * 100;
-        const isOver = percent > 100;
-        const color = isOver ? "danger" : percent > 80 ? "primary" : "success";
-        const Icon = iconMap[cat.name] || LayoutGrid;
+        const percent = parseFloat(cat.percentUsed);
+        const color = cat.isExceeded ? "danger" : percent > 80 ? "primary" : "success";
+        const Icon = iconMap[cat.category] || LayoutGrid;
 
         return (
           <div
             key={cat.id}
-            className={`bg-white p-4 rounded-2xl border flex items-center gap-4 transition-all ${isOver ? "border-red-200 bg-red-50/30" : "border-gray-100"}`}
+            className={`bg-white px-6 py-5 rounded-2xl border flex items-center gap-5 transition-all hover:shadow-md group ${cat.isExceeded ? "border-red-200 bg-red-50/10" : "border-gray-100"}`}
           >
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${isOver ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"}`}
-            >
-              <Icon size={20} />
+            {/* Icon */}
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${cat.isExceeded ? "bg-red-100 text-red-600" : "bg-indigo-50 text-indigo-600"}`}>
+              <Icon size={22} />
             </div>
-            <div className='flex-1'>
-              <div className='flex justify-between mb-1'>
-                <div>
-                  <span className='text-sm font-bold'>{cat.name}</span>
-                  <p className='text-[10px] text-gray-400'>{cat.description}</p>
-                </div>
-                <div className='text-right'>
-                  <span
-                    className={`text-xs font-bold ${isOver ? "text-red-600" : "text-gray-800"}`}
-                  >
-                    ${cat.spent} / ${cat.limit}
+
+            {/* Content */}
+            <div className='flex-1 min-w-0'>
+              <div className='flex justify-between items-center mb-1'>
+                <span className='text-base font-bold text-gray-900'>{cat.category}</span>
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-bold ${cat.isExceeded ? "text-red-600" : "text-gray-900"}`}>
+                    ${cat.spent.toLocaleString()}
+                    <span className="text-gray-300 font-medium"> / </span>
+                    <span className="text-gray-500 font-semibold">${cat.budget.toLocaleString()}</span>
                   </span>
-                  <div className='text-[10px] text-gray-400'>
-                    {Math.round(percent)}% used
-                  </div>
+                  {cat.isExceeded && <AlertCircle size={15} className="text-red-500 shrink-0" />}
                 </div>
               </div>
               <ProgressBar progress={percent} color={color} />
+              <div className="flex justify-between mt-1">
+                <span className={`text-[10px] font-bold ${cat.isExceeded ? 'text-red-500' : 'text-gray-400'}`}>
+                  {percent.toFixed(0)}% utilised
+                </span>
+                <span className={`text-[10px] font-bold ${cat.isExceeded ? 'text-red-600' : 'text-green-600'}`}>
+                  {cat.isExceeded ? "Over by" : "Remaining:"} ${cat.remaining.toLocaleString()}
+                </span>
+              </div>
             </div>
-            <div className='ml-6 text-right min-w-[100px]'>
-              <p className='text-[10px] text-gray-400 uppercase'>
-                {isOver ? "Over Budget" : "Remaining"}
-              </p>
-              <p
-                className={`text-sm font-bold ${isOver ? "text-red-600" : "text-gray-800"}`}
+
+            {/* Edit Button */}
+            {onEdit && (
+              <button
+                onClick={() => onEdit(cat)}
+                className="opacity-0 group-hover:opacity-100 transition-all p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl shrink-0"
+                title="Edit budget"
               >
-                ${Math.abs(cat.limit - cat.spent).toFixed(2)}
-              </p>
-            </div>
-            {isOver && <AlertCircle className='text-red-500' size={18} />}
+                <Pencil size={16} />
+              </button>
+            )}
           </div>
         );
       })}
