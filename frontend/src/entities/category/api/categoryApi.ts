@@ -12,4 +12,12 @@ export const categoryApi = {
     const response = await baseApi.post<Category>("/categories", data);
     return response.data;
   },
+  update: async (id: string, data: Partial<Category>) => {
+    const response = await baseApi.patch<Category>(`/categories/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await baseApi.delete(`/categories/${id}`);
+    return response.data;
+  },
 };

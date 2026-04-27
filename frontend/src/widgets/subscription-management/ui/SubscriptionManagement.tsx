@@ -77,17 +77,28 @@ export const SubscriptionManagement = () => {
   return (
     <div className='space-y-8'>
       {/* Header with Add Button */}
-      <div className='flex justify-between items-center'>
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm'>
         <div>
-          <p className="text-gray-500 text-sm">Track and manage your recurring bills</p>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">Subscriptions</h2>
+          <p className="text-gray-500 text-sm font-medium">Track and manage your recurring bills</p>
         </div>
-        <Button 
+        <button 
           onClick={() => setShowAddForm(!showAddForm)}
-          variant={showAddForm ? "outline" : "primary"}
-          className="flex items-center gap-2"
+          className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${
+            showAddForm 
+              ? "bg-rose-50 text-rose-600 shadow-rose-100 hover:bg-rose-100" 
+              : "bg-indigo-600 text-white shadow-indigo-100 hover:bg-indigo-700"
+          }`}
         >
-          {showAddForm ? "Cancel" : <><Plus size={18} /> Add Subscription</>}
-        </Button>
+          {showAddForm ? (
+            <>Cancel</>
+          ) : (
+            <>
+              <Plus size={20} /> 
+              <span>Add Subscription</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Add Subscription Form */}
